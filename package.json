@@ -8,6 +8,8 @@
     "dotenv": "^5.0.1",
     "express": "^4.16.2",
     "isomorphic-fetch": "^2.2.1",
+    "json2csv": "^4.0.2",
+    "pug": "^2.0.1",
     "redis": "^2.8.0"
   },
   "devDependencies": {

@@ -1,12 +1,11 @@
 const express = require('express');
+const Json2csvParser = require('json2csv').Parser;
 
 const router = express.Router();
 
 const {
-  departments,
   getTests,
   clearCache,
-  getStats,
 } = require('./scraper');
 
 /**
@@ -32,42 +31,13 @@ function timerEnd(time) {
   return ms;
 }
 
-/**
- * Higher order fall sem vefur middleware í villumeðhöndlun.
- *
- * @param {function} fn Middleware sem passað skal uppá
- * @returns {function} Middleware með villumeðhöndlun
- */
-function catchErrors(fn) {
-  return (req, res, next) => fn(req, res, next).catch(next);
-}
-
-function indexRoute(req, res) {
-  const timer = timerStart();
-
-  const depts = departments.map(dept => ({
-    name: dept.name,
-    link: `/${dept.slug}`,
-  }));
-
-  const elapsed = timerEnd(timer);
-
-  res.json({
-    elapsed,
-    departments: depts,
-    clearCache: '/clearCache',
-    stats: '/stats',
-  });
-}
-
 async function testsRoute(req, res, next) {
   const timer = timerStart();
-  const { slug } = req.params;
 
   let tests;
 
   try {
-    tests = await getTests(slug);
+    tests = await getTests();
   } catch (error) {
     return next(error);
   }
@@ -81,8 +51,37 @@ async function testsRoute(req, res, next) {
 
   return res.json({
     elapsed,
-    school: tests,
   });
+}
+
+async function download(req, res, next) {
+  let tests;
+
+  try {
+    tests = await getTests();
+  } catch (error) {
+    return next(error);
+  }
+
+  if (tests === null) {
+    return next();
+  }
+
+  const fields = ['number', 'date', 'time', 'teams', 'venue'];
+  const quote = '';
+  const delimiter = ';';
+
+  const Json2csv = new Json2csvParser({ fields, quote, delimiter });
+  const csv = Json2csv.parse(tests);
+
+  console.log(csv);
+
+  res.setHeader('Content-disposition', 'attachment; filename=pepsiKK.csv');
+  res.charset = 'utf-8';
+  res.set('Content-Type', 'text/csv');
+  res.status(200).send(csv);
+
+  return true;
 }
 
 async function clearCacheRoute(req, res, next) {
@@ -104,28 +103,11 @@ async function clearCacheRoute(req, res, next) {
   });
 }
 
-async function statsRoute(req, res, next) {
-  const timer = timerStart();
-
-  let stats;
-
-  try {
-    stats = await getStats();
-  } catch (error) {
-    return next(error);
-  }
-
-  const elapsed = timerEnd(timer);
-
-  return res.json({
-    elapsed,
-    stats,
-  });
-}
-
-router.get('/', indexRoute);
-router.get('/stats', catchErrors(statsRoute));
-router.get('/clearCache', catchErrors(clearCacheRoute));
-router.get('/:slug', catchErrors(testsRoute));
+router.get('/', testsRoute);
+router.get('/frontpage', (req, res) => {
+  res.render('frontpage');
+});
+router.get('/download', download);
+router.get('/clear', clearCacheRoute);
 
 module.exports = router;
