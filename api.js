@@ -74,8 +74,6 @@ async function download(req, res, next) {
   const Json2csv = new Json2csvParser({ fields, quote, delimiter });
   const csv = Json2csv.parse(tests);
 
-  console.log(csv);
-
   res.setHeader('Content-disposition', 'attachment; filename=pepsiKK.csv');
   res.charset = 'utf-8';
   res.set('Content-Type', 'text/csv');
