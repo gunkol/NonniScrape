@@ -22,7 +22,7 @@ async function get(cacheKey) {
 
   if (cached) { return cached; }
 
-  const url = 'http://www.ksi.is/mot/motalisti/urslit-stada/?MotNumer=37403';
+  const url = 'http://www.ksi.is/mot/motalisti/urslit-stada/?MotNumer=37366';
   const response = await fetch(url);
   const text = await response.text();
 
@@ -37,7 +37,7 @@ async function get(cacheKey) {
  * @returns {Promise} Promise sem mun innihalda gögn fyrir svið eða null ef það finnst ekki
  */
 async function getTests() {
-  const cacheKey = 'pepsiKarla';
+  const cacheKey = 'bikarKK';
 
   const text = await get(cacheKey);
 
@@ -79,7 +79,7 @@ async function getTests() {
  */
 async function clearCache() {
   try {
-    const pattern = 'pepsiKarla';
+    const pattern = '';
     const keys = await asyncKeys(pattern);
     await asyncDel.apply(client, keys);
   } catch (error) {
