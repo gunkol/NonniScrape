@@ -3,7 +3,6 @@ require('isomorphic-fetch');
 const cheerio = require('cheerio');
 const redis = require('redis');
 const util = require('util');
-const Json2csvParser = require('json2csv').Parser;
 
 const redisOptions = {
   url: process.env.REDIS_URL,
@@ -20,9 +19,13 @@ const asyncDel = util.promisify(client.del).bind(client);
 async function get(cacheKey) {
   const cached = await asyncGet(cacheKey);
 
-  if (cached) { return cached; }
+  if (cached) {
+    console.info('Data retrieved from cache');
+    return cached;
+  }
 
   const url = 'http://www.ksi.is/mot/motalisti/urslit-stada/?MotNumer=37366';
+  // const url = 'http://kki.is/motamal/leikir-og-urslit/motayfirlit/Leikir?league_id=190&season_id=undefined#mbt:6-303$t&0=1';
   const response = await fetch(url);
   const text = await response.text();
 
@@ -36,7 +39,7 @@ async function get(cacheKey) {
  * @param {string} slug - Slug fyrir svið sem skal sækja
  * @returns {Promise} Promise sem mun innihalda gögn fyrir svið eða null ef það finnst ekki
  */
-async function getTests() {
+async function getGames() {
   const cacheKey = 'bikarKK';
 
   const text = await get(cacheKey);
@@ -91,6 +94,6 @@ async function clearCache() {
 }
 
 module.exports = {
-  getTests,
+  getGames,
   clearCache,
 };

@@ -4,7 +4,7 @@ const Json2csvParser = require('json2csv').Parser;
 const router = express.Router();
 
 const {
-  getTests,
+  getGames,
   clearCache,
 } = require('./scraper');
 
@@ -31,34 +31,11 @@ function timerEnd(time) {
   return ms;
 }
 
-async function testsRoute(req, res, next) {
-  const timer = timerStart();
-
-  let tests;
-
-  try {
-    tests = await getTests();
-  } catch (error) {
-    return next(error);
-  }
-
-
-  if (tests === null) {
-    return next();
-  }
-
-  const elapsed = timerEnd(timer);
-
-  return res.json({
-    elapsed,
-  });
-}
-
 async function download(req, res, next) {
   let tests;
 
   try {
-    tests = await getTests();
+    tests = await getGames();
   } catch (error) {
     return next(error);
   }
@@ -101,9 +78,10 @@ async function clearCacheRoute(req, res, next) {
   });
 }
 
-router.get('/', testsRoute);
-router.get('/frontpage', (req, res) => {
-  res.render('frontpage');
+// router.get('/', testsRoute);
+router.get('/', async (req, res) => {
+  const games = await getGames();
+  res.render('frontpage', { games });
 });
 router.get('/download', download);
 router.get('/clear', clearCacheRoute);

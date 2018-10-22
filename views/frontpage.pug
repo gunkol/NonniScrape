@@ -1,1 +1,11 @@
-a(href="/download") download
+extends layout
+block content
+
+  ul
+    each game in games
+      li
+        p= game.teams
+        p= game.venue
+        p= game.date
+        p= game.time
+  button.form__button Senda
